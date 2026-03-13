@@ -84,7 +84,152 @@
 </div>
 
 <script>
-const html=document.documentElement;const grid=document.getElementById('grid');const loading=document.getElementById('loading');const search=document.getElementById('search');const btnSearch=document.getElementById('btn-search');const toggleNSFW=document.getElementById('toggle-nsfw');const modal=document.getElementById('modal');const bigImg=document.getElementById('big-img');const btnDownload=document.getElementById('btn-download');let page=1;let isLoading=false;let nsfw=localStorage.getItem('nsfw')==='true';function setTheme(t){html.setAttribute('data-theme',t);localStorage.setItem('theme',t);document.querySelectorAll('.color-swatch').forEach(e=>e.classList.toggle('active',e.dataset.theme===t))}setTheme(localStorage.getItem('theme')||'dark');document.getElementById('btn-theme').onclick=e=>{e.stopPropagation();document.getElementById('theme-panel').classList.toggle('open')};document.getElementById('theme-panel').onclick=e=>{e.stopPropagation();if(e.target.classList.contains('color-swatch')){setTheme(e.target.dataset.theme);document.getElementById('theme-panel').classList.remove('open')}};document.onclick=e=>{const p=document.getElementById('theme-panel');if(!p.contains(e.target)&&!document.getElementById('btn-theme').contains(e.target))p.classList.remove('open')};toggleNSFW.classList.toggle('active',nsfw);toggleNSFW.querySelector('.material-icons').textContent=nsfw?'visibility_off':'visibility';toggleNSFW.onclick=()=>{nsfw=!nsfw;localStorage.setItem('nsfw',nsfw);toggleNSFW.classList.toggle('active',nsfw);toggleNSFW.querySelector('.material-icons').textContent=nsfw?'visibility_off':'visibility';reset()};function getTags(){let t=search.value.trim();t+=nsfw?'':' rating:s';t+=' -ai -ai-generated';return t.trim()}async function load(){if(isLoading)return;isLoading=true;loading.style.display='block';const t=getTags();const u=`/api/posts?page=\( {page}&tags= \){encodeURIComponent(t)}`;try{const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw new Error();const p=await r.json();if(!p.length){loading.textContent='Daha yok';return}for(let i=0;i<p.length;i++){const o=p[i];const c=document.createElement('div');c.className='card';const im=document.createElement('img');im.src=o.preview_url||'';im.loading='lazy';im.onclick=()=>openModal(o);c.appendChild(im);grid.appendChild(c);setTimeout(()=>c.classList.add('visible'),80+i*60)}page++}catch{loading.textContent='Hata'}finally{isLoading=false;if(grid.children.length)loading.style.display='none'}}function reset(){grid.innerHTML='';page=1;load()}function openModal(p){bigImg.src=p.sample_url||p.file_url||p.preview_url||'https://via.placeholder.com/400?text=Resim+Yok';btnDownload.onclick=()=>{const a=document.createElement('a');a.href=p.file_url;a.download=`yande_\( {p.id}. \){p.file_ext||'jpg'}`;document.body.appendChild(a);a.click();a.remove()};modal.style.display='flex';setTimeout(()=>modal.classList.add('show'),20)}function closeModal(){modal.classList.remove('show');setTimeout(()=>{modal.style.display='none';bigImg.src=''},450)}modal.onclick=e=>{if(e.target===modal)closeModal()};btnSearch.onclick=reset;search.onkeydown=e=>e.key==='Enter'&&(e.preventDefault(),reset());document.getElementById('home-btn').onclick=reset;new IntersectionObserver(([e])=>{if(e.isIntersecting&&!isLoading)load()}).observe(loading);load();
+const html = document.documentElement;
+const grid = document.getElementById('grid');
+const loading = document.getElementById('loading');
+const search = document.getElementById('search');
+const btnSearch = document.getElementById('btn-search');
+const toggleNSFW = document.getElementById('toggle-nsfw');
+const modal = document.getElementById('modal');
+const bigImg = document.getElementById('big-img');
+const btnDownload = document.getElementById('btn-download');
+
+let page = 1;
+let isLoading = false;
+let nsfw = localStorage.getItem('nsfw') === 'true';
+
+function setTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === theme);
+  });
+}
+setTheme(localStorage.getItem('theme') || 'dark');
+
+document.getElementById('btn-theme').onclick = e => {
+  e.stopPropagation();
+  document.getElementById('theme-panel').classList.toggle('open');
+};
+document.getElementById('theme-panel').onclick = e => {
+  e.stopPropagation();
+  if (e.target.classList.contains('color-swatch')) {
+    setTheme(e.target.dataset.theme);
+    document.getElementById('theme-panel').classList.remove('open');
+  }
+};
+document.onclick = e => {
+  const panel = document.getElementById('theme-panel');
+  if (!panel.contains(e.target) && !document.getElementById('btn-theme').contains(e.target)) {
+    panel.classList.remove('open');
+  }
+};
+
+toggleNSFW.classList.toggle('active', nsfw);
+toggleNSFW.querySelector('.material-icons').textContent = nsfw ? 'visibility_off' : 'visibility';
+
+toggleNSFW.onclick = () => {
+  nsfw = !nsfw;
+  localStorage.setItem('nsfw', nsfw);
+  toggleNSFW.classList.toggle('active', nsfw);
+  toggleNSFW.querySelector('.material-icons').textContent = nsfw ? 'visibility_off' : 'visibility';
+  reset();
+};
+
+function getTags() {
+  let t = search.value.trim();
+  if (!nsfw) t += (t ? ' ' : '') + 'rating:s -rating:q -rating:e';
+  t += ' -ai -ai-generated';
+  return t.trim();
+}
+
+async function load() {
+  if (isLoading) return;
+  isLoading = true;
+  loading.style.display = 'block';
+
+  const tags = getTags();
+  const url = `/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}`;
+
+  try {
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const posts = await res.json();
+
+    if (!posts.length) {
+      loading.textContent = 'Daha yok';
+      return;
+    }
+
+    posts.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const img = document.createElement('img');
+      img.src = p.preview_url || 'https://via.placeholder.com/140?text=No+Preview';
+      img.loading = 'lazy';
+      img.onclick = () => openModal(p);
+      card.appendChild(img);
+      grid.appendChild(card);
+      setTimeout(() => card.classList.add('visible'), 80 + i * 60);
+    });
+
+    page++;
+  } catch (e) {
+    console.error(e);
+    loading.textContent = 'Hata';
+  } finally {
+    isLoading = false;
+    if (grid.children.length) loading.style.display = 'none';
+  }
+}
+
+function reset() {
+  grid.innerHTML = '';
+  page = 1;
+  load();
+}
+
+function openModal(post) {
+  // Öncelik sırası: sample_url > file_url > preview_url
+  bigImg.src = post.sample_url || post.file_url || post.preview_url || 'https://via.placeholder.com/400?text=Resim+Yok';
+  bigImg.alt = 'Önizleme';
+
+  btnDownload.onclick = () => {
+    if (!post.file_url) {
+      alert('İndirilebilir dosya yok');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = post.file_url;
+    a.download = `yande_\( {post.id}. \){post.file_ext || 'jpg'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('show'), 20);
+}
+
+function closeModal() {
+  modal.classList.remove('show');
+  setTimeout(() => {
+    modal.style.display = 'none';
+    bigImg.src = '';
+  }, 450);
+}
+
+modal.onclick = e => { if (e.target === modal) closeModal(); };
+
+btnSearch.onclick = reset;
+search.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); reset(); } };
+document.getElementById('home-btn').onclick = reset;
+
+new IntersectionObserver(([ent]) => {
+  if (ent.isIntersecting && !isLoading) load();
+}).observe(loading);
+
+load();
 </script>
 </body>
 </html>
