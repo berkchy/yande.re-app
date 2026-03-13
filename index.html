@@ -170,6 +170,7 @@
       const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const posts = await res.json();
+      console.log("Posts: ", posts);
 
       if (posts.length === 0) {
         loading.textContent = 'Daha fazla yok';
