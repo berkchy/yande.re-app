@@ -163,7 +163,7 @@
     const tags = getTags();
    
 	// Netlify proxy üzerinden
-	const url = `https://yando.netlify.app/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}`;
+	const url = `/.netlify/functions/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}`;
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
