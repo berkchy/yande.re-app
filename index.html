@@ -2,63 +2,62 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>Yande Mobile</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
-      --primary: #bb86fc; --bg: #121212; --surface: #1e1e1e;
-      --text: #e0e0e0; --on-surface: #ffffff;
-      --transition: all 0.4s ease;
+      --primary: #a78bfa;
+      --bg: #0f0f0f;
+      --surface: #171717;
+      --text: #e5e5e5;
+      --text-secondary: #9ca3af;
     }
-    * { transition: var(--transition); }
+    [data-theme="dark"]     { --primary:#a78bfa; --bg:#0f0f0f; --surface:#171717; --text:#e5e5e5; --text-secondary:#9ca3af; }
+    [data-theme="light"]    { --primary:#6d28d9; --bg:#f9fafb; --surface:#ffffff; --text:#111827; --text-secondary:#6b7280; }
+    [data-theme="purple"]   { --primary:#c084fc; --bg:#2e1065; --surface:#4c1d95; --text:#f3e8ff; --text-secondary:#c4b5fd; }
+    [data-theme="indigo"]   { --primary:#818cf8; --bg:#1e1b4b; --surface:#312e81; --text:#e0e7ff; --text-secondary:#a5b4fc; }
+    [data-theme="cyan"]     { --primary:#22d3ee; --bg:#0e7490; --surface:#164e63; --text:#cffafe; --text-secondary:#67e8f9; }
+    [data-theme="emerald"]  { --primary:#34d399; --bg:#064e3b; --surface:#065f46; --text:#d1fae5; --text-secondary:#6ee7b7; }
+    [data-theme="amber"]    { --primary:#fbbf24; --bg:#451a03; --surface:#78350f; --text:#fef3c7; --text-secondary:#fcd34d; }
+    [data-theme="rose"]     { --primary:#fb7185; --bg:#500724; --surface:#881337; --text:#fce7f3; --text-secondary:#f9a8d4; }
+    [data-theme="violet"]   { --primary:#c084fc; --bg:#3b0764; --surface:#581c87; --text:#f3e8ff; --text-secondary:#d8b4fe; }
+    [data-theme="slate"]    { --primary:#94a3b8; --bg:#0f172a; --surface:#1e293b; --text:#e2e8f0; --text-secondary:#94a3b8; }
 
-    [data-theme="light"]  { --primary:#6200ee; --bg:#f5f5f5; --surface:#ffffff; --text:#212121; --on-surface:#000000; }
-    [data-theme="purple"] { --primary:#d500f9; --bg:#1a0033; --surface:#2c004d; --text:#f3e5f5; --on-surface:#ffffff; }
-    [data-theme="blue"]   { --primary:#2196f3; --bg:#0d1b2a; --surface:#1b263b; --text:#e0e1dd; --on-surface:#ffffff; }
-    [data-theme="teal"]   { --primary:#00bfa5; --bg:#001510; --surface:#00332b; --text:#e0f2f1; --on-surface:#ffffff; }
-
-    body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; }
-    header { position:fixed; top:0; left:0; right:0; z-index:10; background:var(--surface); padding:8px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 10px rgba(0,0,0,0.4); }
-    #search { 
-      flex:1; padding:12px 16px; border-radius:28px; 
-      background: color-mix(in srgb, var(--surface) 20%, transparent); 
-      border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); 
-      color: var(--text); font-size:16px; 
-    }
-    #search::placeholder { color: color-mix(in srgb, var(--text) 60%, transparent); }
-    .fab { 
-      width:48px; height:48px; border-radius:50%; 
-      background:var(--primary); color:var(--on-surface); 
-      display:flex; align-items:center; justify-content:center; 
-      font-size:22px; box-shadow:0 3px 10px rgba(0,0,0,0.35); 
-      border:none; cursor:pointer; 
-    }
-    main { flex:1; overflow-y:auto; padding:72px 8px 100px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; }
-    .card { background:var(--surface); border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.5); }
-    .card img { width:100%; display:block; }
-    #modal { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; display:none; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
-    #modal img { max-width:95%; max-height:65vh; border-radius:16px; object-fit:contain; box-shadow:0 8px 24px rgba(0,0,0,0.7); }
-    .modal-actions { margin-top:20px; display:flex; gap:24px; }
-    .btn-modal { padding:12px 28px; border-radius:50px; border:none; font-size:16px; cursor:pointer; min-width:120px; }
-    .btn-close { background:#424242; color:#fff; }
-    .btn-download { background:var(--primary); color:var(--on-surface); font-weight:bold; }
-    nav { position:fixed; bottom:0; left:0; right:0; height:72px; background:var(--surface); display:flex; justify-content:space-around; align-items:center; box-shadow:0 -2px 10px rgba(0,0,0,0.4); z-index:10; }
-    nav button { background:none; border:none; color:var(--text); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; cursor:pointer; padding:8px; }
-    nav button.active { color:var(--primary); }
+    body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+    header { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--surface); padding:12px 16px; display:flex; gap:12px; align-items:center; box-shadow:0 2px 12px rgba(0,0,0,0.25); }
+    #search { flex:1; padding:12px 16px; border-radius:28px; background:var(--surface); border:1px solid rgba(158,158,158,0.3); color:var(--text); font-size:16px; }
+    #search::placeholder { color:var(--text-secondary); }
+    .fab { width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; display:grid; place-items:center; box-shadow:0 3px 10px rgba(0,0,0,0.3); border:none; font-size:22px; }
+    main { flex:1; padding:72px 12px 90px; overflow-y:auto; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+    .card { background:var(--surface); border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.2); cursor:pointer; opacity:0; transform:translateY(20px); transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    .card.visible { opacity:1; transform:translateY(0); }
+    .card:hover { transform:scale(1.04); box-shadow:0 12px 32px rgba(0,0,0,0.35); }
+    .card img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; }
+    #modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:999; display:none; align-items:center; justify-content:center; padding:16px; opacity:0; transition:opacity 0.4s ease; }
+    #modal.show { opacity:1; display:flex; }
+    .modal-content { background:var(--surface); border-radius:28px; max-width:92%; max-height:88vh; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.6); transform:scale(0.85); opacity:0; transition:all 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+    #modal.show .modal-content { transform:scale(1); opacity:1; }
+    .modal-header { padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .modal-title { margin:0; font-size:1.2rem; font-weight:500; }
+    .close-btn { background:none; border:none; color:var(--text-secondary); font-size:28px; cursor:pointer; }
+    .modal-body { padding:12px; text-align:center; }
+    .modal-body img { max-width:100%; max-height:55vh; border-radius:16px; object-fit:contain; }
+    .modal-actions { padding:20px; display:flex; gap:16px; justify-content:center; }
+    .btn { padding:12px 28px; border-radius:50px; border:none; font-size:1rem; font-weight:500; cursor:pointer; }
+    .btn-close { background:#424242; color:white; }
+    .btn-download { background:var(--primary); color:black; }
+    nav { position:fixed; bottom:0; left:0; right:0; height:76px; background:var(--surface); display:flex; justify-content:space-around; align-items:center; box-shadow:0 -3px 12px rgba(0,0,0,0.25); z-index:100; }
+    nav button { background:none; border:none; color:var(--text-secondary); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.75rem; cursor:pointer; padding:8px; transition:color 0.3s; }
+    nav button.active, nav button:hover { color:var(--primary); }
     nav .material-icons { font-size:28px; }
-    #loading { text-align:center; padding:40px; color:#888; font-size:18px; }
-
-    #theme-panel {
-      position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
-      z-index:20; background:var(--surface); padding:12px 20px; border-radius:999px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.5); display:flex; gap:12px;
-      opacity:0; pointer-events:none; transition:opacity 0.3s ease, transform 0.3s ease;
-    }
-    #theme-panel.open { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(-8px); }
-    .color-swatch { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; box-shadow:0 2px 6px rgba(0,0,0,0.4); }
-    .color-swatch:hover, .color-swatch.active { border-color:var(--primary); transform:scale(1.2); }
+    #loading { text-align:center; padding:60px 0; color:var(--primary); font-size:2.2rem; animation:spin 2s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    #theme-panel { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 150; background: var(--surface); padding: 12px 16px; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; gap: 12px; max-width: 90vw; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.35s ease; }
+	#theme-panel.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-12px); }
+	.color-swatch { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: all 0.3s; }
+	.color-swatch:hover, .color-swatch.active { border-color: var(--primary); transform: scale(1.18); }
   </style>
 </head>
 <body>
@@ -70,28 +69,41 @@
 
 <main>
   <div class="grid" id="grid"></div>
-  <div id="loading">Yükleniyor...</div>
+  <div id="loading"><span class="material-icons">hourglass_empty</span></div>
 </main>
 
 <nav>
-  <button id="home-btn" class="active"><span class="material-icons">home</span><span>Home</span></button>
+  <button id="home-btn" class="active"><span class="material-icons">home</span><span>Ana Sayfa</span></button>
   <button id="toggle-nsfw"><span class="material-icons">visibility</span><span>NSFW</span></button>
   <button id="btn-theme"><span class="material-icons">palette</span><span>Tema</span></button>
 </nav>
 
 <div id="theme-panel">
-  <div class="color-swatch" style="background:#121212;" data-theme="dark"></div>
-  <div class="color-swatch" style="background:#f5f5f5;" data-theme="light"></div>
-  <div class="color-swatch" style="background:#d500f9;" data-theme="purple"></div>
-  <div class="color-swatch" style="background:#2196f3;" data-theme="blue"></div>
-  <div class="color-swatch" style="background:#00bfa5;" data-theme="teal"></div>
+  <div class="color-swatch" style="background:#111827;" data-theme="dark"></div>
+  <div class="color-swatch" style="background:#f9fafb;" data-theme="light"></div>
+  <div class="color-swatch" style="background:#7c3aed;" data-theme="purple"></div>
+  <div class="color-swatch" style="background:#4f46e5;" data-theme="indigo"></div>
+  <div class="color-swatch" style="background:#0891b2;" data-theme="cyan"></div>
+  <div class="color-swatch" style="background:#059669;" data-theme="emerald"></div>
+  <div class="color-swatch" style="background:#d97706;" data-theme="amber"></div>
+  <div class="color-swatch" style="background:#e11d48;" data-theme="rose"></div>
+  <div class="color-swatch" style="background:#8b5cf6;" data-theme="violet"></div>
+  <div class="color-swatch" style="background:#475569;" data-theme="slate"></div>
 </div>
 
 <div id="modal">
-  <img id="big-img" src="" alt="" />
-  <div class="modal-actions">
-    <button class="btn-modal btn-close" onclick="closeModal()">Kapat</button>
-    <button class="btn-modal btn-download" id="btn-download">İndir</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Önizleme</h3>
+      <button class="close-btn" onclick="closeModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <img id="big-img" src="" alt="" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-close" onclick="closeModal()">Kapat</button>
+      <button class="btn btn-download" id="btn-download">İndir</button>
+    </div>
   </div>
 </div>
 
@@ -102,18 +114,14 @@
   const search = document.getElementById('search');
   const btnSearch = document.getElementById('btn-search');
   const toggleNSFW = document.getElementById('toggle-nsfw');
-  const homeBtn = document.getElementById('home-btn');
   const modal = document.getElementById('modal');
   const bigImg = document.getElementById('big-img');
   const btnDownload = document.getElementById('btn-download');
-  const btnTheme = document.getElementById('btn-theme');
-  const themePanel = document.getElementById('theme-panel');
 
   let page = 1;
   let isLoading = false;
   let nsfw = localStorage.getItem('nsfw') === 'true';
 
-  // Tema
   function setTheme(theme) {
     html.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -121,25 +129,29 @@
       el.classList.toggle('active', el.dataset.theme === theme);
     });
   }
+  setTheme(localStorage.getItem('theme') || 'dark');
 
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  setTheme(savedTheme);
-
-  btnTheme.onclick = (e) => { e.stopPropagation(); themePanel.classList.toggle('open'); };
-  themePanel.addEventListener('click', e => {
+  document.getElementById('btn-theme').onclick = e => {
+    e.stopPropagation();
+    document.getElementById('theme-panel').classList.toggle('open');
+  };
+  document.getElementById('theme-panel').onclick = e => {
     e.stopPropagation();
     if (e.target.classList.contains('color-swatch')) {
       setTheme(e.target.dataset.theme);
-      themePanel.classList.remove('open');
+      document.getElementById('theme-panel').classList.remove('open');
     }
-  });
-  document.addEventListener('click', e => {
-    if (!themePanel.contains(e.target) && !btnTheme.contains(e.target)) themePanel.classList.remove('open');
-  });
+  };
+  document.onclick = e => {
+    const panel = document.getElementById('theme-panel');
+    if (!panel.contains(e.target) && !document.getElementById('btn-theme').contains(e.target)) {
+      panel.classList.remove('open');
+    }
+  };
 
-  // NSFW
   toggleNSFW.classList.toggle('active', nsfw);
   toggleNSFW.querySelector('.material-icons').textContent = nsfw ? 'visibility_off' : 'visibility';
+
   toggleNSFW.onclick = () => {
     nsfw = !nsfw;
     localStorage.setItem('nsfw', nsfw);
@@ -150,48 +162,47 @@
 
   function getTags() {
     let t = search.value.trim();
-    if (!nsfw) t += ' rating:safe';
+    t += nsfw ? '' : ' rating:s';
     t += ' -ai -ai-generated';
-    return t;
+    return t.trim();
   }
 
   async function load() {
     if (isLoading) return;
     isLoading = true;
-    loading.textContent = 'Yükleniyor...';
+    loading.style.display = 'block';
 
     const tags = getTags();
-   
-	// Netlify proxy üzerinden
-	const url = `/api/posts?page={page}&tags={encodeURIComponent(tags)}`;
+    const url = `/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}`;
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw new Error();
       const posts = await res.json();
 
-      if (posts.length === 0) {
-        loading.textContent = 'Daha fazla yok';
+      if (!posts.length) {
+        loading.textContent = 'Daha yok';
         return;
       }
 
-      posts.forEach(p => {
+      posts.forEach((p, i) => {
         const card = document.createElement('div');
         card.className = 'card';
         const img = document.createElement('img');
-        img.src = p.preview_url;
+        img.src = p.preview_url || '';
         img.loading = 'lazy';
         img.onclick = () => openModal(p);
         card.appendChild(img);
         grid.appendChild(card);
+        setTimeout(() => card.classList.add('visible'), 80 + i * 60);
       });
 
       page++;
-    } catch (e) {
-      console.error(e);
-      loading.textContent = 'Hata - yenile';
+    } catch {
+      loading.textContent = 'Hata';
     } finally {
       isLoading = false;
+      if (grid.children.length) loading.style.display = 'none';
     }
   }
 
@@ -202,31 +213,34 @@
   }
 
   function openModal(post) {
-    bigImg.src = post.sample_url || post.file_url;
+    bigImg.src = post.sample_url || post.file_url || post.preview_url;
     btnDownload.onclick = () => {
       const a = document.createElement('a');
       a.href = post.file_url;
-      a.download = `yande_\( {post.id}. \){post.file_ext || 'png'}`;
+      a.download = `yande_\( {post.id}. \){post.file_ext || 'jpg'}`;
       a.click();
     };
     modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 20);
   }
 
   function closeModal() {
-    modal.style.display = 'none';
-    bigImg.src = '';
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      bigImg.src = '';
+    }, 450);
   }
 
   modal.onclick = e => { if (e.target === modal) closeModal(); };
 
   btnSearch.onclick = reset;
-  search.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); reset(); } };
-  homeBtn.onclick = reset;
+  search.onkeydown = e => e.key === 'Enter' && (e.preventDefault(), reset());
+  document.getElementById('home-btn').onclick = reset;
 
-  const observer = new IntersectionObserver(ent => {
-    if (ent[0].isIntersecting && !isLoading) load();
-  });
-  observer.observe(loading);
+  new IntersectionObserver(([ent]) => {
+    if (ent.isIntersecting && !isLoading) load();
+  }).observe(loading);
 
   load();
 </script>
