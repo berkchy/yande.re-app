@@ -19,7 +19,7 @@
     body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
     header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--surface);padding:12px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.25)}
     #search{flex:1;padding:12px 16px;border-radius:28px;background:var(--surface);border:1px solid rgba(158,158,158,.3);color:var(--text);font-size:16px}
-    #search::placeholder{color:var(--text-sec)}.fab{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.3);border:none;font-size:55px}
+    #search::placeholder{color:var(--text-sec)}.fab{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.3);border:none;font-size:22px}
     main{flex:1;padding:72px 12px 90px;overflow-y:auto}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
     .card{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.2);cursor:pointer;opacity:0;transform:translateY(20px);transition:all .5s cubic-bezier(.34,1.56,.64,1)}
     .card.visible{opacity:1;transform:translateY(0)}.card:hover{transform:scale(1.04);box-shadow:0 12px 32px rgba(0,0,0,.35)}
@@ -39,6 +39,32 @@
     #theme-panel.open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-12px)}
     .color-swatch{flex:0 0 32px;width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:all .3s}
     .color-swatch:hover,.color-swatch.active{border-color:var(--primary);transform:scale(1.2)}
+    #hd-loader{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.45);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:5;
+}
+
+.loader{
+width:48px;
+height:48px;
+border:4px solid rgba(255,255,255,0.25);
+border-top:4px solid white;
+border-radius:50%;
+animation:spin 0.8s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
+}
   </style>
 </head>
 <body>
@@ -80,138 +106,155 @@
       <button class="btn btn-close" onclick="closeModal()">Kapat</button>
       <button class="btn btn-download" id="btn-download">İndir</button>
     </div>
+    
+    <div id="hd-loader">
+    	<div class="loader"></div>
+	</div>
+	
   </div>
 </div>
 
 <script>
-const html=document.documentElement;
-const grid=document.getElementById('grid');
-const loading=document.getElementById('loading');
-const search=document.getElementById('search');
-const btnSearch=document.getElementById('btn-search');
-const toggleNSFW=document.getElementById('toggle-nsfw');
-const modal=document.getElementById('modal');
-const bigImg=document.getElementById('big-img');
-const btnDownload=document.getElementById('btn-download');
+const html = document.documentElement
+const grid = document.getElementById("grid")
+const loading = document.getElementById("loading")
+const search = document.getElementById("search")
+const btnSearch = document.getElementById("btn-search")
+const toggleNSFW = document.getElementById("toggle-nsfw")
+const modal = document.getElementById("modal")
+const bigImg = document.getElementById("big-img")
+const btnDownload = document.getElementById("btn-download")
 
-let page=1;
-let isLoading=false;
-let nsfw=localStorage.getItem('nsfw')==='true';
+let page = 1
+let isLoading = false
+let controller = null
+let nsfw = localStorage.getItem("nsfw") === "true"
 
-function setTheme(t){
-html.setAttribute('data-theme',t);
-localStorage.setItem('theme',t);
-document.querySelectorAll('.color-swatch')
-.forEach(e=>e.classList.toggle('active',e.dataset.theme===t))
+function setTheme(t) {
+	html.setAttribute("data-theme", t)
+	localStorage.setItem("theme", t)
+
+	document.querySelectorAll(".color-swatch").forEach(e =>
+		e.classList.toggle("active", e.dataset.theme === t)
+	)
 }
 
-setTheme(localStorage.getItem('theme')||'dark');
+setTheme(localStorage.getItem("theme") || "dark")
 
-document.getElementById('btn-theme').onclick=e=>{
-e.stopPropagation();
-document.getElementById('theme-panel').classList.toggle('open')
+document.getElementById("btn-theme").onclick = e => {
+	e.stopPropagation()
+	document.getElementById("theme-panel").classList.toggle("open")
 }
 
-document.getElementById('theme-panel').onclick=e=>{
-e.stopPropagation();
-if(e.target.classList.contains('color-swatch')){
-setTheme(e.target.dataset.theme);
-document.getElementById('theme-panel').classList.remove('open')
-}}
+document.getElementById("theme-panel").onclick = e => {
+	e.stopPropagation()
 
-document.onclick=e=>{
-const p=document.getElementById('theme-panel');
-if(!p.contains(e.target)&&!document.getElementById('btn-theme').contains(e.target))
-p.classList.remove('open')
+	if (e.target.classList.contains("color-swatch")) {
+		setTheme(e.target.dataset.theme)
+		document.getElementById("theme-panel").classList.remove("open")
+	}
 }
 
-toggleNSFW.classList.toggle('active',nsfw);
-toggleNSFW.querySelector('.material-icons').textContent=
-nsfw?'visibility_off':'visibility';
+document.onclick = e => {
+	const p = document.getElementById("theme-panel")
 
-toggleNSFW.onclick=()=>{
-nsfw=!nsfw;
-localStorage.setItem('nsfw',nsfw);
-toggleNSFW.classList.toggle('active',nsfw);
-toggleNSFW.querySelector('.material-icons').textContent=
-nsfw?'visibility_off':'visibility';
-reset()
+	if (!p.contains(e.target) && !document.getElementById("btn-theme").contains(e.target))
+		p.classList.remove("open")
 }
 
-function getTags(){
+toggleNSFW.classList.toggle("active", nsfw)
+toggleNSFW.querySelector(".material-icons").textContent = nsfw ? "visibility_off" : "visibility"
 
-let tags = search.value.trim()
+toggleNSFW.onclick = () => {
+	nsfw = !nsfw
+	localStorage.setItem("nsfw", nsfw)
 
-if(!nsfw){
-tags += (tags ? " " : "") + "rating:s"
-}else{
-tags += (tags ? " " : "") + "-rating:s"
+	toggleNSFW.classList.toggle("active", nsfw)
+	toggleNSFW.querySelector(".material-icons").textContent = nsfw ? "visibility_off" : "visibility"
+
+	reset()
 }
 
-tags += " -ai -ai-generated"
+function getTags() {
+	let tags = search.value.trim()
 
-return tags.trim()
+	if (!nsfw) {
+		tags += (tags ? " " : "") + "rating:s"
+	} else {
+		tags += (tags ? " " : "") + "-rating:s"
+	}
 
+	tags += " -ai -ai-generated"
+
+	return tags.trim()
 }
 
-async function load(){
-if(isLoading)return;
+async function load() {
+	if (isLoading) return
 
-isLoading=true;
-loading.style.display='block';
+	if (controller) controller.abort()
+	controller = new AbortController()
 
-const t=getTags();
-const u = `/api/posts?page=${page}&tags=${encodeURIComponent(t)}`;
+	isLoading = true
+	loading.style.display = "block"
 
-try{
+	const t = getTags()
+	const u = `/api/posts?page=${page}&tags=${encodeURIComponent(t)}&_=${Date.now()}`
 
-const r=await fetch(u,{cache:'no-cache'});
+	try {
+		const r = await fetch(u, {
+			cache: "no-store",
+			signal: controller.signal
+		})
 
-if(!r.ok)throw new Error();
+		if (!r.ok) throw new Error()
 
-const p=await r.json();
+		const p = await r.json()
 
-if(!p.length){
-loading.textContent='Daha yok';
-return
+		if (!p.length) {
+			loading.textContent = "Daha yok"
+			return
+		}
+
+		p.forEach((o, i) => {
+			const c = document.createElement("div")
+			c.className = "card"
+
+			const im = document.createElement("img")
+			im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img"
+			im.loading = "lazy"
+
+			im.onclick = () => openModal(o)
+
+			c.appendChild(im)
+			grid.appendChild(c)
+
+			setTimeout(() => c.classList.add("visible"), 80 + i * 60)
+		})
+
+		page++
+
+	} catch (e) {
+		if (e.name !== "AbortError") {
+			loading.textContent = "Hata"
+		}
+	} finally {
+		isLoading = false
+
+		if (grid.children.length) loading.style.display = "none"
+	}
 }
 
-p.forEach((o,i)=>{
+function reset() {
+	page = 1
+	grid.innerHTML = ""
 
-const c=document.createElement('div');
-c.className='card';
+	window.scrollTo({ top: 0, behavior: "instant" })
 
-const im=document.createElement('img');
+	loading.textContent = "Yükleniyor..."
+	loading.style.display = "block"
 
-im.src=o.preview_url||'https://via.placeholder.com/140?text=No+Img';
-im.loading='lazy';
-
-im.onclick=()=>openModal(o);
-
-c.appendChild(im);
-grid.appendChild(c);
-
-setTimeout(()=>c.classList.add('visible'),80+i*60)
-
-});
-
-page++
-
-}catch{
-
-loading.textContent='Hata'
-
-}finally{
-
-isLoading=false;
-if(grid.children.length)loading.style.display='none'
-
-}}
-
-function reset(){
-grid.innerHTML='';
-page=1;
-load()
+	load()
 }
 
 function openModal(p){
@@ -219,61 +262,60 @@ function openModal(p){
 const preview = p.preview_url
 const hd = p.sample_url || p.file_url
 
+const loader = document.getElementById("hd-loader")
+
 bigImg.src = preview
-bigImg.alt = "Yükleniyor..."
+bigImg.alt = "yükleniyor"
 
-const loadingText = document.createElement("div")
-loadingText.innerText = "HD yükleniyor..."
-loadingText.style.position="absolute"
-loadingText.style.top="50%"
-loadingText.style.left="50%"
-loadingText.style.transform="translate(-50%,-50%)"
-loadingText.style.color="white"
-
-modal.appendChild(loadingText)
+loader.style.display="flex"
 
 const img = new Image()
 
 img.onload = ()=>{
 bigImg.src = hd
-loadingText.remove()
+loader.style.display="none"
 }
 
 img.src = hd
+
+btnDownload.onclick = ()=>{
+window.open(`/api/view?url=${encodeURIComponent(p.file_url)}`)
+}
 
 modal.style.display="flex"
 setTimeout(()=>modal.classList.add("show"),20)
 
 }
 
-function closeModal(){
-modal.classList.remove('show');
+function closeModal() {
+	modal.classList.remove("show")
 
-setTimeout(()=>{
-modal.style.display='none';
-bigImg.src=''
-},450)
+	setTimeout(() => {
+		modal.style.display = "none"
+		bigImg.src = ""
+	}, 450)
 }
 
-modal.onclick=e=>{
-if(e.target===modal)closeModal()
+modal.onclick = e => {
+	if (e.target === modal) closeModal()
 }
 
-btnSearch.onclick=reset;
+btnSearch.onclick = reset
 
-search.onkeydown=e=>{
-if(e.key==='Enter'){
-e.preventDefault();
-reset()
-}}
+search.onkeydown = e => {
+	if (e.key === "Enter") {
+		e.preventDefault()
+		reset()
+	}
+}
 
-document.getElementById('home-btn').onclick=reset;
+document.getElementById("home-btn").onclick = reset
 
-new IntersectionObserver(([e])=>{
-if(e.isIntersecting&&!isLoading)load()
-}).observe(loading);
+new IntersectionObserver(([e]) => {
+	if (e.isIntersecting && !isLoading) load()
+}).observe(loading)
 
-load();
+load()
 </script>
 
 </body>
