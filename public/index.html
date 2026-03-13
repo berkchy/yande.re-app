@@ -101,16 +101,14 @@ animation:spin 0.8s linear infinite;
     </div>
     <div class="modal-body">
       <img id="big-img" src="" alt=""/>
+      <div id="hd-loader">
+    	<div class="loader"></div>
+	  </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-close" onclick="closeModal()">Kapat</button>
       <button class="btn btn-download" id="btn-download">İndir</button>
     </div>
-    
-    <div id="hd-loader">
-    	<div class="loader"></div>
-	</div>
-	
   </div>
 </div>
 
@@ -250,8 +248,6 @@ function reset() {
 	grid.innerHTML = ""
 
 	window.scrollTo({ top: 0, behavior: "instant" })
-
-	loading.textContent = "Yükleniyor..."
 	loading.style.display = "block"
 
 	load()
