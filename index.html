@@ -162,7 +162,7 @@
 
     const tags = getTags();
     const apiUrl = `https://yande.re/post.json?limit=30&page=\( {page}&tags= \){encodeURIComponent(tags)}`;
-    const url = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    const url = `${encodeURIComponent(apiUrl)}`;
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
