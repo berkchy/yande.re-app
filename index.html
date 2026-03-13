@@ -161,17 +161,14 @@
     loading.textContent = 'Yükleniyor...';
 
     const tags = getTags();
-    const query = `limit=30&page=\( {page}&tags= \){encodeURIComponent(tags)}`;
-
+   
 	// Netlify proxy üzerinden
-	const url = `/api/post.json?${query}`;
+	const url = `https://yando.netlify.app/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}`;
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const posts = await res.json();
-      console.log("Posts: ", posts);
-      console.log("Res: ", res);
 
       if (posts.length === 0) {
         loading.textContent = 'Daha fazla yok';
