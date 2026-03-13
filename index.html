@@ -162,7 +162,7 @@
 
     const tags = getTags();
     const apiUrl = `https://yande.re/post.json?limit=30&page=\( {page}&tags= \){encodeURIComponent(tags)}`;
-    const url = `${encodeURIComponent(apiUrl)}`;
+	const url = `/api/${apiUrl.replace('https://yande.re/', '')}`;  // /api/post.json?... olur
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
