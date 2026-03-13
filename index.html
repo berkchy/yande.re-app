@@ -161,8 +161,10 @@
     loading.textContent = 'Yükleniyor...';
 
     const tags = getTags();
-    const apiUrl = `https://yande.re/post.json?limit=30&page=\( {page}&tags= \){encodeURIComponent(tags)}`;
-	const url = `/api/${apiUrl.replace('https://yande.re/', '')}`;  // /api/post.json?... olur
+    const query = `limit=30&page=\( {page}&tags= \){encodeURIComponent(tags)}`;
+
+	// Netlify proxy üzerinden
+	const url = `/api/post.json?${query}`;
 
     try {
       const res = await fetch(url, { cache: 'no-cache' });
