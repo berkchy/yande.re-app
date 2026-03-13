@@ -171,6 +171,7 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const posts = await res.json();
       console.log("Posts: ", posts);
+      console.log("Res: ", res);
 
       if (posts.length === 0) {
         loading.textContent = 'Daha fazla yok';
