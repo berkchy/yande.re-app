@@ -195,21 +195,26 @@ async function load() {
 	let tags = search.value.trim();
 	tags += " -ai -ai-generated"; // AI filtre her zaman
 
-	const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
+	let shown = 0;
+	const maxShow = 30;
 
-	try {
-		const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-		if (!res.ok) throw new Error();
+	while (shown < maxShow) {
+		const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
 
-		const posts = await res.json();
+		let posts;
+		try {
+			const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+			if (!res.ok) throw new Error();
+			posts = await res.json();
+		} catch (e) {
+			if (e.name !== "AbortError") loading.textContent = "Hata";
+			break;
+		}
 
 		if (!posts.length) {
 			loading.textContent = "Daha yok";
-			return;
+			break;
 		}
-
-		let shown = 0;
-		const maxShow = 30; // ekranda gösterilecek maksimum post
 
 		for (let i = 0; i < posts.length && shown < maxShow; i++) {
 			const o = posts[i];
@@ -233,14 +238,11 @@ async function load() {
 			shown++;
 		}
 
-		page++;
-
-	} catch (e) {
-		if (e.name !== "AbortError") loading.textContent = "Hata";
-	} finally {
-		isLoading = false;
-		if (grid.children.length) loading.style.display = "none";
+		page++; // Sonraki sayfa
 	}
+
+	isLoading = false;
+	if (grid.children.length) loading.style.display = "none";
 }
 
 function reset() {
