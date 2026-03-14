@@ -236,7 +236,6 @@ function addPostCard(o) {
     im.onclick = () => openModal(o);
     c.appendChild(im);
 
-    // Footer: dosya adı + indirme butonu
     const footer = document.createElement("div");
     footer.style.display = "flex";
     footer.style.alignItems = "center";
@@ -244,14 +243,20 @@ function addPostCard(o) {
     footer.style.gap = "8px";
     footer.style.overflow = "hidden";
 
-    // Dosya adı (kayan yazı)
+    // Dosya adı container
+    const fileNameWrapper = document.createElement("div");
+    fileNameWrapper.style.flex = "1";
+    fileNameWrapper.style.overflow = "hidden";
+    fileNameWrapper.style.position = "relative";
+    fileNameWrapper.style.height = "1.2em";
+
     const fileName = document.createElement("div");
-    fileName.style.flex = "1";
     fileName.style.whiteSpace = "nowrap";
+    fileName.style.position = "absolute";
+    fileName.style.left = "0";
+    fileName.style.top = "0";
     fileName.style.fontSize = "0.8rem";
     fileName.style.color = "var(--text-sec)";
-    fileName.style.position = "relative";
-    fileName.style.overflow = "hidden";
 
     const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
     const ext = extMatch ? extMatch[1] : "jpg";
@@ -259,26 +264,10 @@ function addPostCard(o) {
     const filename = `yande_${o.id}_${tagsClean}.${ext}`;
     fileName.textContent = filename;
 
-    // Kayan yazı: soldan sola, butonun solunda, sayfa üzerinde gezmiyor
-    fileName.style.display = "inline-block";
-    fileName.style.animation = "marquee 8s linear infinite";
-    fileName.style.marginRight = "8px";
+    fileNameWrapper.appendChild(fileName);
+    footer.appendChild(fileNameWrapper);
 
-    // CSS animasyonu (tek sefer ekleyelim)
-    if (!document.getElementById("marquee-style")) {
-        const style = document.createElement("style");
-        style.id = "marquee-style";
-        style.textContent = `
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-100%)); }
-        }`;
-        document.head.appendChild(style);
-    }
-
-    footer.appendChild(fileName);
-
-    // Download butonu
+    // İndirme butonu
     const dlBtn = document.createElement("button");
     dlBtn.className = "material-icons";
     dlBtn.textContent = "download";
@@ -305,12 +294,34 @@ function addPostCard(o) {
         a.click();
         document.body.removeChild(a);
     };
-
     footer.appendChild(dlBtn);
     c.appendChild(footer);
     grid.appendChild(c);
 
     setTimeout(() => c.classList.add("visible"), 80);
+
+    // Kayan yazı animasyonu
+    const startMarquee = () => {
+        const wrapperWidth = fileNameWrapper.offsetWidth;
+        const textWidth = fileName.offsetWidth;
+        if (textWidth <= wrapperWidth) return; // sığarsa kaydırma yok
+
+        let pos = 0;
+        const speed = 1; // px/frame
+        const step = () => {
+            pos -= speed;
+            if (-pos >= textWidth) {
+                pos = wrapperWidth;
+                setTimeout(() => requestAnimationFrame(step), 3000); // 3 saniye bekle
+            } else {
+                requestAnimationFrame(step);
+            }
+            fileName.style.transform = `translateX(${pos}px)`;
+        };
+        requestAnimationFrame(step);
+    };
+
+    startMarquee();
 }
 
 // Infinite scroll
