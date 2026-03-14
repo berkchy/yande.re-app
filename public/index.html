@@ -116,6 +116,7 @@ animation:spin 0.8s linear infinite;
 </div>
 
 <script>
+let hdLoaderImg = null
 const html = document.documentElement
 const grid = document.getElementById("grid")
 const loading = document.getElementById("loading")
@@ -178,15 +179,7 @@ toggleNSFW.onclick = () => {
 
 function getTags() {
 	let tags = search.value.trim()
-
-	if (!nsfw) {
-		tags += (tags ? " " : "") + "rating:s"
-	} else {
-		tags += (tags ? " " : "") + "-rating:s"
-	}
-
 	tags += " -ai -ai-generated"
-
 	return tags.trim()
 }
 
@@ -218,6 +211,11 @@ async function load() {
 		}
 
 		p.forEach((o, i) => {
+			if (nsfw && o.rating === "s") 
+				return;
+			else (!nsfw && o.rating !== "s")
+				return;
+			
 			const c = document.createElement("div")
 			c.className = "card"
 
@@ -270,18 +268,18 @@ function openModal(p){
 
 	const proxyUrl = `/api/view?url=${encodeURIComponent(hd)}`
 
-	const img = new Image()
+	hdLoaderImg = new Image()
 
-	img.onload = () => {
+	hdLoaderImg.onload = () => {
 		bigImg.src = proxyUrl
 		loader.style.display = "none"
 	}
 
-	img.onerror = () => {
+	hdLoaderImg.onerror = () => {
 		loader.style.display = "none"
 	}
 
-	img.src = proxyUrl
+	hdLoaderImg.src = proxyUrl
 
 	btnDownload.onclick = () => {
 		window.open(`/api/view?url=${encodeURIComponent(p.file_url)}`)
@@ -289,15 +287,21 @@ function openModal(p){
 
 	modal.style.display = "flex"
 	setTimeout(()=>modal.classList.add("show"),20)
-
 }
 
 function closeModal() {
+
+	if (hdLoaderImg) {
+		hdLoaderImg.src = ""
+		hdLoaderImg = null
+	}
+
 	modal.classList.remove("show")
 
 	setTimeout(() => {
 		modal.style.display = "none"
 		bigImg.src = ""
+		document.getElementById("hd-loader").style.display = "none"
 	}, 450)
 }
 
