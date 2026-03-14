@@ -258,31 +258,37 @@ function reset() {
 
 function openModal(p){
 
-const preview = p.preview_url
-const hd = p.sample_url || p.file_url
+	const preview = p.preview_url
+	const hd = p.sample_url || p.file_url
 
-const loader = document.getElementById("hd-loader")
+	const loader = document.getElementById("hd-loader")
 
-bigImg.src = preview
-bigImg.alt = "yükleniyor"
+	bigImg.src = preview
+	bigImg.alt = "yükleniyor"
 
-loader.style.display="flex"
+	loader.style.display = "flex"
 
-const img = new Image()
+	const proxyUrl = `/api/view?url=${encodeURIComponent(hd)}`
 
-img.onload = ()=>{
-bigImg.src = hd
-loader.style.display="none"
-}
+	const img = new Image()
 
-img.src = hd
+	img.onload = () => {
+		bigImg.src = proxyUrl
+		loader.style.display = "none"
+	}
 
-btnDownload.onclick = ()=>{
-window.open(`/api/view?url=${encodeURIComponent(p.file_url)}`)
-}
+	img.onerror = () => {
+		loader.style.display = "none"
+	}
 
-modal.style.display="flex"
-setTimeout(()=>modal.classList.add("show"),20)
+	img.src = proxyUrl
+
+	btnDownload.onclick = () => {
+		window.open(`/api/view?url=${encodeURIComponent(p.file_url)}`)
+	}
+
+	modal.style.display = "flex"
+	setTimeout(()=>modal.classList.add("show"),20)
 
 }
 
