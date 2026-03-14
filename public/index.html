@@ -310,12 +310,12 @@ function addPostCard(o) {
         if (textWidth <= wrapperWidth) return; // sığarsa kaydırma yok
 
         let pos = 0;
-        const speed = 1; // px/frame
+        const speed = 0.5; // px/frame
         const step = () => {
             pos -= speed;
             if (-pos >= textWidth) {
                 pos = wrapperWidth;
-                setTimeout(() => requestAnimationFrame(step), 3000); // 3 saniye bekle
+                setTimeout(() => requestAnimationFrame(step), 2000); // 3 saniye bekle
             } else {
                 requestAnimationFrame(step);
             }
