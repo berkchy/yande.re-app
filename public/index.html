@@ -221,6 +221,7 @@ async function load() {
         for (let i = 0; i < posts.length && shown < maxShow; i++) {
             const o = posts[i];
 
+            // NSFW filtresi
             if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
 
             const c = document.createElement("div");
@@ -242,11 +243,10 @@ async function load() {
 
         if (added === 0) {
             // Bu sayfadan NSFW filtresinden dolayı hiç post eklenmediyse
-            // direk bir sonraki sayfaya geçelim
             console.log("Bu sayfadan hiç post eklenmedi, sonraki sayfaya geçiliyor.");
         }
 
-        page++;
+        page++; // Sonraki sayfa
     }
 
     isLoading = false;
@@ -291,9 +291,18 @@ function openModal(p){
 	hdLoaderImg.src = proxyUrl
 
 	btnDownload.onclick = () => {
+		const url = `/api/view?url=${encodeURIComponent(p.file_url)}`;
+		const extMatch = p.file_url.match(/\.(\w+)(\?|$)/); // dosya uzantısını alır
+		const ext = extMatch ? extMatch[1] : "jpg";
+
+		// tags'i sadece temizlemiş hâlde al, boşluk yerine _
+		const tagsClean = (p.tags || "").replace(/\s+/g, "_").slice(0, 50);
+
+		const filename = `yande_${p.id}_${tagsClean}.${ext}`;
+
 		const a = document.createElement("a");
-		a.href = `/api/view?url=${encodeURIComponent(p.file_url)}`;
-		a.download = "";
+		a.href = url;
+		a.download = filename;
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
