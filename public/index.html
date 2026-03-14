@@ -291,8 +291,13 @@ function openModal(p){
 	hdLoaderImg.src = proxyUrl
 
 	btnDownload.onclick = () => {
-		window.open(`/api/view?url=${encodeURIComponent(p.file_url)}`)
-	}
+		const a = document.createElement("a");
+		a.href = `/api/view?url=${encodeURIComponent(p.file_url)}`;
+		a.download = "";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	};
 
 	modal.style.display = "flex"
 	setTimeout(()=>modal.classList.add("show"),20)
