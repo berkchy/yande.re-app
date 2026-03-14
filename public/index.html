@@ -189,12 +189,11 @@ async function load() {
     isLoading = true;
     loading.style.display = "block";
 
-    let shown = grid.children.length; // zaten ekranda kaç post var
+    let shown = grid.children.length; // ekranda kaç post var
     const maxShow = 30;
     let tags = search.value.trim();
     tags += " -ai -ai-generated";
 
-    // Controller abort varsa iptal et
     if (controller) controller.abort();
     controller = new AbortController();
 
@@ -210,15 +209,18 @@ async function load() {
             break;
         }
 
+        console.log("API sayfa", page, "gelen postlar:", posts.map(p => ({id: p.id, rating: p.rating})));
+
         if (!posts.length) {
             loading.textContent = "Daha yok";
-            break; // API'den post kalmadı
+            break;
         }
+
+        let added = 0; // bu sayfadan eklenen post sayısı
 
         for (let i = 0; i < posts.length && shown < maxShow; i++) {
             const o = posts[i];
 
-            // NSFW filtre
             if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
 
             const c = document.createElement("div");
@@ -235,9 +237,16 @@ async function load() {
             setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
 
             shown++;
+            added++;
         }
 
-        page++; // Sonraki sayfa
+        if (added === 0) {
+            // Bu sayfadan NSFW filtresinden dolayı hiç post eklenmediyse
+            // direk bir sonraki sayfaya geçelim
+            console.log("Bu sayfadan hiç post eklenmedi, sonraki sayfaya geçiliyor.");
+        }
+
+        page++;
     }
 
     isLoading = false;
