@@ -189,8 +189,8 @@ async function load() {
     isLoading = true;
     loading.style.display = "block";
 
-    let shown = grid.children.length; // ekranda kaç post var
     const maxShow = 30;
+    let shown = grid.children.length; // zaten ekranda kaç post var
     let tags = search.value.trim();
     tags += " -ai -ai-generated";
 
@@ -221,20 +221,59 @@ async function load() {
         for (let i = 0; i < posts.length && shown < maxShow; i++) {
             const o = posts[i];
 
-            // NSFW filtresi
             if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
 
+            // Kart oluştur
             const c = document.createElement("div");
             c.className = "card";
 
+            // Resim
             const im = document.createElement("img");
             im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
             im.loading = "lazy";
             im.onclick = () => openModal(o);
 
             c.appendChild(im);
-            grid.appendChild(c);
 
+            // Alt kısım: dosya adı + indirme butonu
+            const footer = document.createElement("div");
+            footer.style.display = "flex";
+            footer.style.justifyContent = "space-between";
+            footer.style.alignItems = "center";
+            footer.style.padding = "4px 8px";
+
+            // Dosya adı
+            const fileName = document.createElement("span");
+            const ext = o.file_url.split(".").pop().split("?")[0]; // uzantı
+            fileName.textContent = `${o.id}.${ext}`;
+            fileName.style.fontSize = "0.8rem";
+            fileName.style.color = "var(--text-sec)";
+            footer.appendChild(fileName);
+
+            // İndirme butonu
+            const dlBtn = document.createElement("button");
+            dlBtn.className = "material-icons";
+			dlBtn.textContent = "download";
+            dlBtn.style.border = "none";
+            dlBtn.style.borderRadius = "50%";
+            dlBtn.style.width = "28px";
+            dlBtn.style.height = "28px";
+            dlBtn.style.background = "var(--primary)";
+            dlBtn.style.cursor = "pointer";
+            dlBtn.onclick = (e) => {
+                e.stopPropagation(); // modal açılmasını engelle
+                const link = document.createElement("a");
+                link.href = `/api/view?url=${encodeURIComponent(o.file_url)}`;
+                link.download = `${o.id}.${ext}`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            };
+            footer.appendChild(dlBtn);
+
+            c.appendChild(footer);
+
+            grid.appendChild(c);
             setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
 
             shown++;
@@ -242,7 +281,6 @@ async function load() {
         }
 
         if (added === 0) {
-            // Bu sayfadan NSFW filtresinden dolayı hiç post eklenmediyse
             console.log("Bu sayfadan hiç post eklenmedi, sonraki sayfaya geçiliyor.");
         }
 
@@ -343,9 +381,10 @@ search.onkeydown = e => {
 
 document.getElementById("home-btn").onclick = reset
 
+// Infinite scroll
 new IntersectionObserver(([e]) => {
-	if (e.isIntersecting && !isLoading) load()
-}).observe(loading)
+    if (e.isIntersecting && !isLoading) load();
+}).observe(loading);
 
 load()
 </script>
