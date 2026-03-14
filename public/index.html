@@ -236,74 +236,75 @@ async function load() {
             c.appendChild(im);
 
             // Alt kısım: dosya adı + indirme butonu
-            const footer = document.createElement("div");
-            footer.style.display = "flex";
-            footer.style.justifyContent = "space-between";
-            footer.style.alignItems = "center";
-            footer.style.padding = "4px 8px";
-            footer.style.gap = "8px"; // buton ve yazı arası boşluk
+const footer = document.createElement("div");
+footer.style.display = "flex";
+footer.style.alignItems = "center";
+footer.style.padding = "4px 8px";
+footer.style.gap = "8px";
+footer.style.overflow = "hidden"; // yazının dışa taşmasını engelle
 
-            // Dosya adı (kayan yazı)
-            const fileName = document.createElement("div");
-            fileName.style.flex = "1";
-            fileName.style.overflow = "hidden";
-            fileName.style.whiteSpace = "nowrap";
-            fileName.style.textOverflow = "ellipsis";
-            fileName.style.fontSize = "0.8rem";
-            fileName.style.color = "var(--text-sec)";
-            fileName.style.position = "relative";
+// Dosya adı (kayan yazı)
+const fileName = document.createElement("div");
+fileName.style.flex = "1";
+fileName.style.whiteSpace = "nowrap";
+fileName.style.fontSize = "0.8rem";
+fileName.style.color = "var(--text-sec)";
+fileName.style.position = "relative";
+fileName.style.overflow = "hidden";
 
-            // Dosya adını oluştur
-            const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
-            const ext = extMatch ? extMatch[1] : "jpg";
-            const tagsClean = (o.tags || "").replace(/\s+/g, "_").slice(0, 50);
-            const filename = `yande_${o.id}_${tagsClean}.${ext}`;
-            fileName.textContent = filename;
+// Dosya adını oluştur
+const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
+const ext = extMatch ? extMatch[1] : "jpg";
+const tagsClean = (o.tags || "").replace(/\s+/g, "_").slice(0, 50);
+const filename = `yande_${o.id}_${tagsClean}.${ext}`;
+fileName.textContent = filename;
 
-            // Kayan yazı animasyonu
-            fileName.style.animation = "marquee 8s linear infinite";
-            fileName.style.animationDelay = "1s";
+// Kayan yazı animasyonu (normal pozisyondan sola doğru kayacak)
+fileName.style.display = "inline-block";
+fileName.style.animation = "marquee 6s linear infinite";
 
-            // CSS animasyonu ekle
-            const style = document.createElement("style");
-            style.textContent = `
-            @keyframes marquee {
-              0% { transform: translateX(100%); }
-              100% { transform: translateX(-100%); }
-            }`;
-            document.head.appendChild(style);
+// CSS animasyonu ekle (butonun solunda kalacak şekilde)
+const style = document.createElement("style");
+style.textContent = `
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(calc(-100% + 100%)); } /* sola kayma */
+  100% { transform: translateX(0); } /* tekrar başa dön */
+}`;
+document.head.appendChild(style);
 
-            footer.appendChild(fileName);
+footer.appendChild(fileName);
 
-            // İndirme butonu
-            const dlBtn = document.createElement("button");
-            dlBtn.className = "material-icons";
-            dlBtn.textContent = "download";
-            dlBtn.style.border = "none";
-            dlBtn.style.borderRadius = "50%";
-            dlBtn.style.width = "32px";
-            dlBtn.style.height = "32px";
-            dlBtn.style.display = "grid";
-            dlBtn.style.placeItems = "center";
-            dlBtn.style.background = "var(--primary)";
-            dlBtn.style.color = "#000";
-            dlBtn.style.cursor = "pointer";
-            dlBtn.style.transition = "transform 0.2s ease";
-            dlBtn.onmouseover = () => dlBtn.style.transform = "scale(1.2)";
-            dlBtn.onmouseout = () => dlBtn.style.transform = "scale(1)";
-            dlBtn.onclick = (e) => {
-                e.stopPropagation();
-                const url = `/api/view?url=${encodeURIComponent(o.file_url)}`;
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
+// İndirme butonu (sağda, sabit)
+const dlBtn = document.createElement("button");
+dlBtn.className = "material-icons";
+dlBtn.textContent = "download";
+dlBtn.style.border = "none";
+dlBtn.style.borderRadius = "50%";
+dlBtn.style.width = "32px";
+dlBtn.style.height = "32px";
+dlBtn.style.display = "grid";
+dlBtn.style.placeItems = "center";
+dlBtn.style.background = "var(--primary)";
+dlBtn.style.color = "#000";
+dlBtn.style.cursor = "pointer";
+dlBtn.style.flexShrink = "0"; // buton küçülmesin
+dlBtn.style.transition = "transform 0.2s ease";
+dlBtn.onmouseover = () => dlBtn.style.transform = "scale(1.2)";
+dlBtn.onmouseout = () => dlBtn.style.transform = "scale(1)";
+dlBtn.onclick = (e) => {
+    e.stopPropagation();
+    const url = `/api/view?url=${encodeURIComponent(o.file_url)}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
 
-            footer.appendChild(dlBtn);
-            c.appendChild(footer);
+footer.appendChild(dlBtn);
+c.appendChild(footer);
 
             grid.appendChild(c);
             setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
