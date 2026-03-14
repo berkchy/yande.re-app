@@ -184,65 +184,64 @@ function getTags() {
 }
 
 async function load() {
-	if (isLoading) return;
+    if (isLoading) return;
 
-	if (controller) controller.abort();
-	controller = new AbortController();
+    isLoading = true;
+    loading.style.display = "block";
 
-	isLoading = true;
-	loading.style.display = "block";
+    let shown = grid.children.length; // zaten ekranda kaç post var
+    const maxShow = 30;
+    let tags = search.value.trim();
+    tags += " -ai -ai-generated";
 
-	let tags = search.value.trim();
-	tags += " -ai -ai-generated"; // AI filtre her zaman
+    // Controller abort varsa iptal et
+    if (controller) controller.abort();
+    controller = new AbortController();
 
-	let shown = 0;
-	const maxShow = 30;
+    while (shown < maxShow) {
+        const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
+        let posts;
+        try {
+            const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+            if (!res.ok) throw new Error();
+            posts = await res.json();
+        } catch (e) {
+            if (e.name !== "AbortError") loading.textContent = "Hata";
+            break;
+        }
 
-	while (shown < maxShow) {
-		const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
+        if (!posts.length) {
+            loading.textContent = "Daha yok";
+            break; // API'den post kalmadı
+        }
 
-		let posts;
-		try {
-			const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-			if (!res.ok) throw new Error();
-			posts = await res.json();
-		} catch (e) {
-			if (e.name !== "AbortError") loading.textContent = "Hata";
-			break;
-		}
+        for (let i = 0; i < posts.length && shown < maxShow; i++) {
+            const o = posts[i];
 
-		if (!posts.length) {
-			loading.textContent = "Daha yok";
-			break;
-		}
+            // NSFW filtre
+            if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
 
-		for (let i = 0; i < posts.length && shown < maxShow; i++) {
-			const o = posts[i];
+            const c = document.createElement("div");
+            c.className = "card";
 
-			// NSFW filtreleme
-			if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
+            const im = document.createElement("img");
+            im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
+            im.loading = "lazy";
+            im.onclick = () => openModal(o);
 
-			const c = document.createElement("div");
-			c.className = "card";
+            c.appendChild(im);
+            grid.appendChild(c);
 
-			const im = document.createElement("img");
-			im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
-			im.loading = "lazy";
-			im.onclick = () => openModal(o);
+            setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
 
-			c.appendChild(im);
-			grid.appendChild(c);
+            shown++;
+        }
 
-			setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
+        page++; // Sonraki sayfa
+    }
 
-			shown++;
-		}
-
-		page++; // Sonraki sayfa
-	}
-
-	isLoading = false;
-	if (grid.children.length) loading.style.display = "none";
+    isLoading = false;
+    if (grid.children.length) loading.style.display = "none";
 }
 
 function reset() {
