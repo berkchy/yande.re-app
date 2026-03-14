@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
   try {
     const { page = 1, tags = '' } = req.query;
     const query = tags ? `&tags=${encodeURIComponent(tags)}` : '';
-    const url = `https://yande.re/post.json?limit=30&page=${page}${query}`;
+    const url = `https://yande.re/post.json?limit=80&page=${page}${query}`;
 
     const response = await axios.get(url, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
