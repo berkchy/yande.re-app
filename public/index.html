@@ -189,36 +189,43 @@ async function load() {
     isLoading = true;
     loading.style.display = "block";
 
-    const tags = getTags();
+    const maxShow = 30; 
+    let tags = search.value.trim() + " -ai -ai-generated";
 
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
+    let posts;
     try {
-        const res = await fetch(`/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error("API hatası");
-        const posts = await res.json();
-
-        if (!posts.length) {
-            loading.textContent = "Daha yok";
-            return;
-        }
-
-        let added = 0;
-
-        for (const o of posts) {
-            if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
-            addPostCard(o);
-            added++;
-        }
-
-        if (added > 0) page++; // Sadece eklenen post varsa sayfa arttır
+        const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+        if (!res.ok) throw new Error();
+        posts = await res.json();
     } catch (e) {
-        console.error(e);
-        loading.textContent = "Hata";
-    } finally {
+        if (e.name !== "AbortError") loading.textContent = "Hata";
         isLoading = false;
-        loading.style.display = grid.children.length ? "none" : "block";
+        return;
     }
+
+    console.log("API sayfa", page, "gelen postlar:", posts.map(p => ({id: p.id, rating: p.rating})));
+
+    if (!posts.length) {
+        loading.textContent = "Daha yok";
+        isLoading = false;
+        return;
+    }
+
+    posts.forEach(o => {
+        if ((!nsfw && o.rating === "s") || (nsfw && o.rating !== "s")) return;
+        addPostCard(o);
+    });
+
+    page++;
+    isLoading = false;
+    loading.style.display = "none";
 }
 
+// Kart oluşturma fonksiyonu
 function addPostCard(o) {
     const c = document.createElement("div");
     c.className = "card";
@@ -227,10 +234,9 @@ function addPostCard(o) {
     im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
     im.loading = "lazy";
     im.onclick = () => openModal(o);
-
     c.appendChild(im);
 
-    // Footer: dosya adı + download
+    // Footer: dosya adı + indirme butonu
     const footer = document.createElement("div");
     footer.style.display = "flex";
     footer.style.alignItems = "center";
@@ -238,20 +244,37 @@ function addPostCard(o) {
     footer.style.gap = "8px";
     footer.style.overflow = "hidden";
 
-    // Dosya adı
+    // Dosya adı (kayan yazı)
     const fileName = document.createElement("div");
     fileName.style.flex = "1";
     fileName.style.whiteSpace = "nowrap";
     fileName.style.fontSize = "0.8rem";
     fileName.style.color = "var(--text-sec)";
+    fileName.style.position = "relative";
     fileName.style.overflow = "hidden";
-    fileName.style.textOverflow = "ellipsis";
 
     const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
     const ext = extMatch ? extMatch[1] : "jpg";
     const tagsClean = (o.tags || "").replace(/\s+/g, "_").slice(0, 50);
     const filename = `yande_${o.id}_${tagsClean}.${ext}`;
     fileName.textContent = filename;
+
+    // Kayan yazı: soldan sola, butonun solunda, sayfa üzerinde gezmiyor
+    fileName.style.display = "inline-block";
+    fileName.style.animation = "marquee 8s linear infinite";
+    fileName.style.marginRight = "8px";
+
+    // CSS animasyonu (tek sefer ekleyelim)
+    if (!document.getElementById("marquee-style")) {
+        const style = document.createElement("style");
+        style.id = "marquee-style";
+        style.textContent = `
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-100%)); }
+        }`;
+        document.head.appendChild(style);
+    }
 
     footer.appendChild(fileName);
 
@@ -269,10 +292,14 @@ function addPostCard(o) {
     dlBtn.style.color = "#000";
     dlBtn.style.cursor = "pointer";
     dlBtn.style.flexShrink = "0";
+    dlBtn.style.transition = "transform 0.2s ease";
+    dlBtn.onmouseover = () => dlBtn.style.transform = "scale(1.2)";
+    dlBtn.onmouseout = () => dlBtn.style.transform = "scale(1)";
     dlBtn.onclick = (e) => {
         e.stopPropagation();
+        const url = `/api/view?url=${encodeURIComponent(o.file_url)}`;
         const a = document.createElement("a");
-        a.href = `/api/view?url=${encodeURIComponent(o.file_url)}`;
+        a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
@@ -280,7 +307,6 @@ function addPostCard(o) {
     };
 
     footer.appendChild(dlBtn);
-
     c.appendChild(footer);
     grid.appendChild(c);
 
