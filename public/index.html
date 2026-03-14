@@ -189,140 +189,108 @@ async function load() {
     isLoading = true;
     loading.style.display = "block";
 
-    const maxShow = 30;
-    let shown = grid.children.length; // zaten ekranda kaç post var
-    let tags = search.value.trim();
-    tags += " -ai -ai-generated";
+    const tags = getTags();
 
-    if (controller) controller.abort();
-    controller = new AbortController();
-
-    while (shown < maxShow) {
-        const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
-        let posts;
-        try {
-            const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-            if (!res.ok) throw new Error();
-            posts = await res.json();
-        } catch (e) {
-            if (e.name !== "AbortError") loading.textContent = "Hata";
-            break;
-        }
-
-        console.log("API sayfa", page, "gelen postlar:", posts.map(p => ({id: p.id, rating: p.rating})));
+    try {
+        const res = await fetch(`/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("API hatası");
+        const posts = await res.json();
 
         if (!posts.length) {
             loading.textContent = "Daha yok";
-            break;
+            return;
         }
 
-        let added = 0; // bu sayfadan eklenen post sayısı
+        let added = 0;
 
-        for (let i = 0; i < posts.length && shown < maxShow; i++) {
-            const o = posts[i];
-
+        for (const o of posts) {
             if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
-
-            // Kart oluştur
-            const c = document.createElement("div");
-            c.className = "card";
-
-            // Resim
-            const im = document.createElement("img");
-            im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
-            im.loading = "lazy";
-            im.onclick = () => openModal(o);
-
-            c.appendChild(im);
-
-            // Alt kısım: dosya adı + indirme butonu
-const footer = document.createElement("div");
-footer.style.display = "flex";
-footer.style.alignItems = "center";
-footer.style.padding = "4px 8px";
-footer.style.gap = "8px";
-footer.style.overflow = "hidden"; // yazının dışa taşmasını engelle
-
-// Dosya adı (kayan yazı)
-const fileName = document.createElement("div");
-fileName.style.flex = "1";
-fileName.style.whiteSpace = "nowrap";
-fileName.style.fontSize = "0.8rem";
-fileName.style.color = "var(--text-sec)";
-fileName.style.position = "relative";
-fileName.style.overflow = "hidden";
-
-// Dosya adını oluştur
-const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
-const ext = extMatch ? extMatch[1] : "jpg";
-const tagsClean = (o.tags || "").replace(/\s+/g, "_").slice(0, 50);
-const filename = `yande_${o.id}_${tagsClean}.${ext}`;
-fileName.textContent = filename;
-
-// Kayan yazı animasyonu (normal pozisyondan sola doğru kayacak)
-fileName.style.display = "inline-block";
-fileName.style.animation = "marquee 6s linear infinite";
-
-// CSS animasyonu ekle (butonun solunda kalacak şekilde)
-const style = document.createElement("style");
-style.textContent = `
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  50% { transform: translateX(calc(-100% + 100%)); } /* sola kayma */
-  100% { transform: translateX(0); } /* tekrar başa dön */
-}`;
-document.head.appendChild(style);
-
-footer.appendChild(fileName);
-
-// İndirme butonu (sağda, sabit)
-const dlBtn = document.createElement("button");
-dlBtn.className = "material-icons";
-dlBtn.textContent = "download";
-dlBtn.style.border = "none";
-dlBtn.style.borderRadius = "50%";
-dlBtn.style.width = "32px";
-dlBtn.style.height = "32px";
-dlBtn.style.display = "grid";
-dlBtn.style.placeItems = "center";
-dlBtn.style.background = "var(--primary)";
-dlBtn.style.color = "#000";
-dlBtn.style.cursor = "pointer";
-dlBtn.style.flexShrink = "0"; // buton küçülmesin
-dlBtn.style.transition = "transform 0.2s ease";
-dlBtn.onmouseover = () => dlBtn.style.transform = "scale(1.2)";
-dlBtn.onmouseout = () => dlBtn.style.transform = "scale(1)";
-dlBtn.onclick = (e) => {
-    e.stopPropagation();
-    const url = `/api/view?url=${encodeURIComponent(o.file_url)}`;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-};
-
-footer.appendChild(dlBtn);
-c.appendChild(footer);
-
-            grid.appendChild(c);
-            setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
-
-            shown++;
+            addPostCard(o);
             added++;
         }
 
-        if (added === 0) {
-            console.log("Bu sayfadan hiç post eklenmedi, sonraki sayfaya geçiliyor.");
-        }
-
-        page++; // Sonraki sayfa
+        if (added > 0) page++; // Sadece eklenen post varsa sayfa arttır
+    } catch (e) {
+        console.error(e);
+        loading.textContent = "Hata";
+    } finally {
+        isLoading = false;
+        loading.style.display = grid.children.length ? "none" : "block";
     }
-
-    isLoading = false;
-    if (grid.children.length) loading.style.display = "none";
 }
+
+function addPostCard(o) {
+    const c = document.createElement("div");
+    c.className = "card";
+
+    const im = document.createElement("img");
+    im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
+    im.loading = "lazy";
+    im.onclick = () => openModal(o);
+
+    c.appendChild(im);
+
+    // Footer: dosya adı + download
+    const footer = document.createElement("div");
+    footer.style.display = "flex";
+    footer.style.alignItems = "center";
+    footer.style.padding = "4px 8px";
+    footer.style.gap = "8px";
+    footer.style.overflow = "hidden";
+
+    // Dosya adı
+    const fileName = document.createElement("div");
+    fileName.style.flex = "1";
+    fileName.style.whiteSpace = "nowrap";
+    fileName.style.fontSize = "0.8rem";
+    fileName.style.color = "var(--text-sec)";
+    fileName.style.overflow = "hidden";
+    fileName.style.textOverflow = "ellipsis";
+
+    const extMatch = o.file_url.match(/\.(\w+)(\?|$)/);
+    const ext = extMatch ? extMatch[1] : "jpg";
+    const tagsClean = (o.tags || "").replace(/\s+/g, "_").slice(0, 50);
+    const filename = `yande_${o.id}_${tagsClean}.${ext}`;
+    fileName.textContent = filename;
+
+    footer.appendChild(fileName);
+
+    // Download butonu
+    const dlBtn = document.createElement("button");
+    dlBtn.className = "material-icons";
+    dlBtn.textContent = "download";
+    dlBtn.style.border = "none";
+    dlBtn.style.borderRadius = "50%";
+    dlBtn.style.width = "32px";
+    dlBtn.style.height = "32px";
+    dlBtn.style.display = "grid";
+    dlBtn.style.placeItems = "center";
+    dlBtn.style.background = "var(--primary)";
+    dlBtn.style.color = "#000";
+    dlBtn.style.cursor = "pointer";
+    dlBtn.style.flexShrink = "0";
+    dlBtn.onclick = (e) => {
+        e.stopPropagation();
+        const a = document.createElement("a");
+        a.href = `/api/view?url=${encodeURIComponent(o.file_url)}`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+    footer.appendChild(dlBtn);
+
+    c.appendChild(footer);
+    grid.appendChild(c);
+
+    setTimeout(() => c.classList.add("visible"), 80);
+}
+
+// Infinite scroll
+new IntersectionObserver(([e]) => {
+    if (e.isIntersecting && !isLoading) load();
+}).observe(loading);
 
 function reset() {
 	page = 1
@@ -414,6 +382,7 @@ search.onkeydown = e => {
 
 document.getElementById("home-btn").onclick = reset
 
+/*
 // Infinite scroll
 const main = document.querySelector("main");
 main.addEventListener("scroll", () => {
@@ -421,6 +390,7 @@ main.addEventListener("scroll", () => {
         load();
     }
 });
+*/
 
 load()
 </script>
