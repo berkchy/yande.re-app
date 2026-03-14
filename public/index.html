@@ -415,15 +415,12 @@ search.onkeydown = e => {
 document.getElementById("home-btn").onclick = reset
 
 // Infinite scroll
-new IntersectionObserver(
-  ([e]) => {
-    if (e.isIntersecting && !isLoading) load();
-  },
-  {
-    root: document.querySelector("main"), // burada main scroll container
-    threshold: 1.0
-  }
-).observe(loading);
+const main = document.querySelector("main");
+main.addEventListener("scroll", () => {
+    if (!isLoading && main.scrollTop + main.clientHeight >= main.scrollHeight - 200) {
+        load();
+    }
+});
 
 load()
 </script>
