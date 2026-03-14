@@ -310,7 +310,7 @@ function addPostCard(o) {
         if (textWidth <= wrapperWidth) return; // sığarsa kaydırma yok
 
         let pos = 0;
-        const speed = 0.5; // px/frame
+        const speed = 0.3; // px/frame
         const step = () => {
             pos -= speed;
             if (-pos >= textWidth) {
