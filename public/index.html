@@ -184,63 +184,62 @@ function getTags() {
 }
 
 async function load() {
-	if (isLoading) return
+	if (isLoading) return;
 
-	if (controller) controller.abort()
-	controller = new AbortController()
+	if (controller) controller.abort();
+	controller = new AbortController();
 
-	isLoading = true
-	loading.style.display = "block"
+	isLoading = true;
+	loading.style.display = "block";
 
-	const t = getTags()
-	const u = `/api/posts?page=${page}&tags=${encodeURIComponent(t)}&_=${Date.now()}`
+	let tags = search.value.trim();
+	tags += " -ai -ai-generated"; // AI filtre her zaman
+
+	const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
 
 	try {
-		const r = await fetch(u, {
-			cache: "no-store",
-			signal: controller.signal
-		})
+		const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+		if (!res.ok) throw new Error();
 
-		if (!r.ok) throw new Error()
+		const posts = await res.json();
 
-		const p = await r.json()
-
-		if (!p.length) {
-			loading.textContent = "Daha yok"
-			return
+		if (!posts.length) {
+			loading.textContent = "Daha yok";
+			return;
 		}
 
-		p.forEach((o, i) => {
-			if (nsfw && o.rating === "s") 
-				return;
-			else (!nsfw && o.rating !== "s")
-				return;
-			
-			const c = document.createElement("div")
-			c.className = "card"
+		let shown = 0;
+		const maxShow = 30; // ekranda gösterilecek maksimum post
 
-			const im = document.createElement("img")
-			im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img"
-			im.loading = "lazy"
+		for (let i = 0; i < posts.length && shown < maxShow; i++) {
+			const o = posts[i];
 
-			im.onclick = () => openModal(o)
+			// NSFW filtreleme
+			if ((nsfw && o.rating === "s") || (!nsfw && o.rating !== "s")) continue;
 
-			c.appendChild(im)
-			grid.appendChild(c)
+			const c = document.createElement("div");
+			c.className = "card";
 
-			setTimeout(() => c.classList.add("visible"), 80 + i * 60)
-		})
+			const im = document.createElement("img");
+			im.src = o.preview_url || "https://via.placeholder.com/140?text=No+Img";
+			im.loading = "lazy";
+			im.onclick = () => openModal(o);
 
-		page++
+			c.appendChild(im);
+			grid.appendChild(c);
+
+			setTimeout(() => c.classList.add("visible"), 80 + shown * 60);
+
+			shown++;
+		}
+
+		page++;
 
 	} catch (e) {
-		if (e.name !== "AbortError") {
-			loading.textContent = "Hata"
-		}
+		if (e.name !== "AbortError") loading.textContent = "Hata";
 	} finally {
-		isLoading = false
-
-		if (grid.children.length) loading.style.display = "none"
+		isLoading = false;
+		if (grid.children.length) loading.style.display = "none";
 	}
 }
 
