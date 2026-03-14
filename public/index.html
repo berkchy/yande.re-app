@@ -189,19 +189,16 @@ async function load() {
     isLoading = true;
     loading.style.display = "block";
 
-    const tags = search.value.trim() + " -ai -ai-generated";
-
-    if (controller) controller.abort();
-    controller = new AbortController();
-
+    let tags = search.value.trim() + " -ai -ai-generated";
     const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
-    let posts = [];
+
+    let posts;
     try {
-        const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+        const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error();
         posts = await res.json();
     } catch (e) {
-        if (e.name !== "AbortError") loading.textContent = "Hata";
+        loading.textContent = "Hata";
         isLoading = false;
         return;
     }
@@ -214,24 +211,22 @@ async function load() {
         return;
     }
 
-    let added = 0;
     posts.forEach(o => {
         if ((!nsfw && o.rating === "s") || (nsfw && o.rating !== "s")) return;
-        addPostCard(o); // her kart artık addPostCard ile ekleniyor
-        added++;
+        addPostCard(o);
     });
 
-    if (added === 0) console.log("Bu sayfadan NSFW filtresinden dolayı hiç post eklenmedi.");
-
-    page++; // sonraki sayfa
+    page++;
     isLoading = false;
-    loading.style.display = grid.children.length ? "none" : "block";
+    loading.style.display = "none";
 }
 
-// Infinite scroll için IntersectionObserver
-new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting && !isLoading) load();
-}).observe(loading);
+// Infinite scroll (window scroll yöntemi)
+window.addEventListener('scroll', () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && !isLoading) {
+        load();
+    }
+});
 
 // Kart oluşturma fonksiyonu
 function addPostCard(o) {
