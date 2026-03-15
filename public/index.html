@@ -567,7 +567,7 @@ async function load() {
   loading.style.display = "block";
 
   const tags = getTags();
-  const url = `/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}&_=${Date.now()}`;
+  const url = `/api/posts?page=\( {page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
 
   let posts;
   try {
@@ -619,7 +619,7 @@ function addPostCard(post) {
 
   const ext = (post.file_url.match(/\.(\w+)(\?|$)/)?.[1] || "jpg");
   const cleanTags = (post.tags || "").replace(/\s+/g, "_").slice(0, 48);
-  const fileNameText = `yande_\( {post.id}_ \){cleanTags}.${ext}`;
+  const fileNameText = `yande_${post.id}_${cleanTags}.${ext}`;
   filename.textContent = fileNameText;
 
   wrapper.appendChild(filename);
@@ -686,7 +686,7 @@ function openModal(post) {
   btnDownload.onclick = () => {
     const ext = (post.file_url.match(/\.(\w+)(\?|$)/)?.[1] || "jpg");
     const clean = (post.tags || "").replace(/\s+/g, "_").slice(0, 48);
-    const fname = `yande_\( {post.id}_ \){clean}.${ext}`;
+    const fname = `yande_${post.id}_${clean}.${ext}`;
 
     const a = document.createElement("a");
     a.href = `/api/view?url=${encodeURIComponent(post.file_url)}`;
