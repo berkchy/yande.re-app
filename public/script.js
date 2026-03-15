@@ -143,7 +143,7 @@ function addPostCard(post) {
 
   const ext = (post.file_url.match(/\.(\w+)(\?|$)/)?.[1] || "jpg");
   const cleanTags = (post.tags || "").replace(/\s+/g, "_").slice(0, 48);
-  const fileNameText = `yande_\( {post.id}_ \){cleanTags}.${ext}`;
+  const fileNameText = `yande_${post.id}_${cleanTags}.${ext}`;
   filename.textContent = fileNameText;
 
   wrapper.appendChild(filename);
@@ -213,7 +213,7 @@ function openModal(post) {
   btnDownload.onclick = () => {
     const ext = (post.file_url.match(/\.(\w+)(\?|$)/)?.[1] || "jpg");
     const clean = (post.tags || "").replace(/\s+/g, "_").slice(0, 48);
-    const fname = `yande_\( {post.id}_ \){clean}.${ext}`;
+    const fname = `yande_${post.id}_${clean}.${ext}`;
 
     const a = document.createElement("a");
     a.href = `/api/view?url=${encodeURIComponent(post.file_url)}`;
