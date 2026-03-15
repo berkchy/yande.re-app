@@ -81,9 +81,7 @@ observer = new IntersectionObserver(entries => {
 
 function getTags() {
   let tags = searchInput.value.trim();
-  if (tags) tags += " ";
-  tags += "-ai -ai-generated";
-  return tags.trim();
+  return tags;
 }
 
 async function load() {
@@ -114,7 +112,7 @@ async function load() {
   }
 
   posts.forEach(post => {
-    if ((!nsfw && post.rating === "s") || (nsfw && post.rating !== "s")) return;
+    if ((!nsfw && post.rating !== "s") || (nsfw && post.rating === "s")) return;
     addPostCard(post);
   });
 
