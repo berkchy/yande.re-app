@@ -90,7 +90,7 @@ async function load() {
   loading.classList.add("active");
 
   const tags = getTags();
-  const url = `/api/posts?page=\( {page}&tags= \){encodeURIComponent(tags)}&_=${Date.now()}`;
+  const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
 
   let posts;
   try {
