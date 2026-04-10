@@ -8,10 +8,12 @@ const modal        = document.getElementById("modal");
 const bigImg       = document.getElementById("big-img");
 const btnDownload  = document.getElementById("btn-download");
 const closeBtn     = modal.querySelector(".close-btn");
+const toggleHD 	= document.getElementById("toggle-hd");
 
 let page      = 1;
 let isLoading = false;
 let nsfw      = localStorage.getItem("nsfw") === "true";
+let hdMode    = localStorage.getItem("hd") === "true";
 let observer  = null;
 
 function setTheme(theme) {
@@ -21,6 +23,15 @@ function setTheme(theme) {
     el.classList.toggle("active", el.dataset.theme === theme);
   });
 }
+
+toggleHD.classList.toggle("active", hdMode);
+
+toggleHD.onclick = () => {
+  hdMode = !hdMode;
+  localStorage.setItem("hd", hdMode);
+  toggleHD.classList.toggle("active", hdMode);
+  reset();
+};
 
 setTheme(localStorage.getItem("theme") || "dark");
 
@@ -88,6 +99,7 @@ async function load() {
   if (isLoading) return;
   isLoading = true;
   loading.classList.add("active");
+  spinner.classList.add("active");
 
   const tags = getTags();
   const url = `/api/posts?page=${page}&tags=${encodeURIComponent(tags)}&_=${Date.now()}`;
@@ -99,14 +111,14 @@ async function load() {
     posts = await res.json();
   } catch {
     loading.innerHTML = "<div style='color:var(--text);font-size:1.2rem;'>Connection error</div>";
-    setTimeout(() => loading.classList.remove("active"), 1800);
+    setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 1800);
     isLoading = false;
     return;
   }
 
   if (!posts.length) {
     loading.innerHTML = "<div style='color:var(--text);font-size:1.2rem;'>No more posts</div>";
-    setTimeout(() => loading.classList.remove("active"), 1400);
+    setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 1400);
     isLoading = false;
     return;
   }
@@ -118,7 +130,7 @@ async function load() {
 
   page++;
   isLoading = false;
-  setTimeout(() => loading.classList.remove("active"), 400);
+  setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 400);
 }
 
 function addPostCard(post) {
@@ -126,7 +138,13 @@ function addPostCard(post) {
   card.className = "card";
 
   const img = document.createElement("img");
-  img.src = post.preview_url || "https://via.placeholder.com/140?text=?";
+  
+  if (hdMode) {
+    img.src = `/api/view?url=${encodeURIComponent(post.sample_url || post.file_url)}`;
+  } else {
+    img.src = post.preview_url || "https://via.placeholder.com/140?text=?";
+  }
+  
   img.loading = "lazy";
   img.alt = "";
   img.onclick = () => openModal(post);
