@@ -9,6 +9,7 @@ const bigImg       = document.getElementById("big-img");
 const btnDownload  = document.getElementById("btn-download");
 const closeBtn     = modal.querySelector(".close-btn");
 const toggleHD 	= document.getElementById("toggle-hd");
+const spinner 	 = document.querySelector(".spinner");
 
 let page      = 1;
 let isLoading = false;
@@ -30,6 +31,7 @@ toggleHD.onclick = () => {
   hdMode = !hdMode;
   localStorage.setItem("hd", hdMode);
   toggleHD.classList.toggle("active", hdMode);
+  toggleHD.querySelector(".material-icons").textContent = hdMode ? "hd" : "sd";
   reset();
 };
 
@@ -111,14 +113,20 @@ async function load() {
     posts = await res.json();
   } catch {
     loading.innerHTML = "<div style='color:var(--text);font-size:1.2rem;'>Connection error</div>";
-    setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 1800);
+    setTimeout(() => {
+		loading.classList.remove("active");
+		spinner.classList.remove("active");
+	}, 1800);
     isLoading = false;
     return;
   }
 
   if (!posts.length) {
     loading.innerHTML = "<div style='color:var(--text);font-size:1.2rem;'>No more posts</div>";
-    setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 1400);
+    setTimeout(() => {
+		loading.classList.remove("active");
+		spinner.classList.remove("active");
+	}, 1400);
     isLoading = false;
     return;
   }
@@ -130,7 +138,10 @@ async function load() {
 
   page++;
   isLoading = false;
-  setTimeout(() => loading.classList.remove("active"); spinner.classList.remove("active"), 400);
+  setTimeout(() => {
+	loading.classList.remove("active");
+	spinner.classList.remove("active"); 
+  }, 400);
 }
 
 function addPostCard(post) {
